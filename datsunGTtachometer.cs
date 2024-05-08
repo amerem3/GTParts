@@ -9,14 +9,11 @@ using Object = UnityEngine.Object;
 using System.Reflection;
 using System.Text;
 
-
 namespace GTParts
 {
 	public class LightController : MonoBehaviour
 	{
 		public Light light;
-
-
 		public float range = 1;
 		public LightShadows shadows = LightShadows.None;
 		public float currentMod = 5;
@@ -26,19 +23,13 @@ namespace GTParts
 		public float targetHeat = 3600;
 		public float thermalMass = 0.0002f;
 		public float disapation = 0.00105f;
-
-
-
 		public bool lightOn;
 		public bool useTotal;
-
 		public Color color;
 		public float voltage;
 		public float intensity;
 		public float heat = 300;
 		public float resistance = 5;
-
-
 		public float wear = 100;
 		public bool damaged;
 		public bool blowing;
@@ -61,12 +52,9 @@ namespace GTParts
 		{
 			resistance = Mathf.Clamp(1 / Mathf.Log((targetHeat / 10f / heat) + 1) * currentMod, 1, 1000);
 			voltage = (!damaged && lightOn ? (useTotal ? GlobalVariables.lightingVolts : GlobalVariables.volts) : 0) * (resistance / (4 + resistance));
-
-			
+   
 			heat = Mathf.Clamp(heat, 300, targetHeat * 1.5f);
-
 			float wantedTemp = Mathf.Pow(voltage, 2) / resistance;
-
 			heat += wantedTemp / thermalMass * Time.fixedDeltaTime;
 			heat -= (heat - 300) / thermalMass * disapation * Time.fixedDeltaTime;
 
@@ -74,8 +62,7 @@ namespace GTParts
 				currentModAfter = currentMod;
 			else
 				currentModAfter *= Time.fixedDeltaTime;
-
-
+    
 			wear -= Mathf.Clamp(Mathf.Pow(heat - targetHeat / 1.2f, wearBlowMultiplier) * wearMultiplier, 0, 5);
 			wear = Mathf.Clamp(wear, 0, 100);
 			if (heat > targetHeat * 2f)
@@ -83,8 +70,7 @@ namespace GTParts
 				// damaged = true;
 				blowing = false;
 			}
-
-
+   
 			if (wear <= 0)
 			{
 				//   damaged = true;
@@ -100,15 +86,12 @@ namespace GTParts
 			SetLight(ref light, color * intensityMult * (wear / 200f + 0.5f), intensity);
         }
 
-
-
 		public static Color CalculateColor(float temperture)
 		{
 			float redVal;
 			float greenVal;
 			float blueVal;
 			float tempDivHundred = temperture / 100f;
-
 
 			if (tempDivHundred <= 66f)
 			{
@@ -147,13 +130,10 @@ namespace GTParts
 		public float fuelGaugeNeedleValue;
 		public Transform needleTransform;
 
-
-		
 		public float downMult = 2.7f;
 		public float downPow = 1.2f;
 		public float upMult = 13f;
 		public float upPow = 1.2f;
-
 
 		private readonly Vector3 maxRotation = new Vector3(0, -10.5f, 0);
 		private readonly Vector3 minRotation = new Vector3(0, -105f, 0);
@@ -162,32 +142,23 @@ namespace GTParts
 		public LightController fuelController;
 		public bool fuelOn;
 		public float fuelTreshhold = 5;
-
-
-
-
 		public LightController lightController;
-
 
 		public void Update()
 		{
 			active = GlobalVariables.gtDashInstalled && GlobalVariables.dashWired;
-
 			float fuel = active && GlobalVariables.fuelWired ? fuelValue.Value : 0;
-
 
 			upMult = Mathf.Pow(GlobalVariables.volts, 1.4f) / 3;
 			if (fuel > fuelGaugeNeedleValue)
 				fuelGaugeNeedleValue += Mathf.Pow(Mathf.Clamp(fuel - fuelGaugeNeedleValue, 0, 30), upPow) * upMult / 3 * Time.deltaTime;
 			fuelGaugeNeedleValue -= Mathf.Pow(Mathf.Clamp(fuelGaugeNeedleValue, 0, 5), downPow) * downMult * Time.deltaTime;
 
-
 			needleTransform.localEulerAngles = Vector3.Lerp(maxRotation, minRotation, fuelGaugeNeedleValue / maxLevel);
 
 			fuelOn = active && GlobalVariables.fuelWired && fuelValue.Value < fuelTreshhold;
 
 			fuelController.lightOn = fuelOn;
-
 			lightController.lightOn = active && GlobalVariables.gabariti;
 		}
 
@@ -204,35 +175,24 @@ namespace GTParts
 
 			needleTransform = transform.GetChild(0);
 
-
 			GameObject lightObject = new GameObject("FueLight");
 			lightObject.transform.parent = transform;
 			lightObject.transform.localPosition = new Vector3(0.0025f, -0.009f, 0.012f);
 			fuelController = lightObject.AddComponent<LightController>();
-
 			fuelController.colorSetting = new Color(18, 13, 0);
 			fuelController.intensityMult = 2.8f;
 			fuelController.shadows = LightShadows.Soft;
 			fuelController.range = 0.1f;
 
-			
-
-
-
-
 			lightObject = new GameObject("GaugeLight");
 			lightObject.transform.parent = transform;
 			lightObject.transform.localPosition = new Vector3(-0.025f, -0.005f, 0.017f);
 			lightController = lightObject.AddComponent<LightController>();
-
 			lightController.colorSetting = new Color(10, 10, 10);
 			lightController.intensityMult = 4f;
 			lightController.shadows = LightShadows.Soft;
 			lightController.range = 0.1f;
 			lightController.useTotal = true;
-
-		
-
 		}
 	}
 	public class TEMP : MonoBehaviour
@@ -242,20 +202,14 @@ namespace GTParts
 		public FsmFloat tempValue;
 		public float tempGaugeNeedleValue;
 		public Transform needleTransform;
-
-
-
 		public float downMult = 2.7f;
 		public float downPow = 1.2f;
 		public float upMult = 13f;
 		public float upPow = 1.2f;
 
-
 		private readonly Vector3 maxRotation = new Vector3(0, -30f, 0);
 		private readonly Vector3 minRotation = new Vector3(0, -130, 0);
 		private readonly float maxLevel = 120f;
-
-
 		public LightController lightController;
 
 		public void Update()
@@ -264,15 +218,12 @@ namespace GTParts
 
 			float temp = active ? tempValue.Value : 0;
 
-
 			upMult = Mathf.Pow(GlobalVariables.volts, 1.4f) / 3;
 			if (temp > tempGaugeNeedleValue)
 				tempGaugeNeedleValue += Mathf.Pow(Mathf.Clamp(temp - tempGaugeNeedleValue, 0, 30), upPow) * upMult / 3 * Time.deltaTime;
 			tempGaugeNeedleValue -= Mathf.Pow(Mathf.Clamp(tempGaugeNeedleValue, 0, 5), downPow) * downMult * Time.deltaTime;
 
-
 			needleTransform.localEulerAngles = Vector3.Lerp(maxRotation, minRotation, Mathf.Clamp((tempGaugeNeedleValue - 35f) / maxLevel, 0, 1));
-
 			lightController.lightOn = active && GlobalVariables.gabariti;
 		}
 
@@ -287,19 +238,12 @@ namespace GTParts
 
 			Destroy(tempGauge.gameObject.GetComponent<PlayMakerFSM>());
 
-
 			needleTransform = transform.GetChild(0);
-
-
-
-
-
 
 			GameObject lightObject = new GameObject("GaugeLight");
 			lightObject.transform.parent = transform;
 			lightObject.transform.localPosition = new Vector3(-0.03f, -0.005f, 0.005f);
 			lightController = lightObject.AddComponent<LightController>();
-
 			lightController.colorSetting = new Color(10, 10, 10);
 			lightController.intensityMult = 4f;
 			lightController.shadows = LightShadows.Soft;
@@ -315,33 +259,21 @@ namespace GTParts
 		public float speedValue;
 		public float speedGaugeNeedleValue;
 		public Transform needleTransform;
-
-
-
 		public float downMult = 25f;
 		public float downPow = 1.2f;
 		public float upMult = 60f;
 		public float upPow = 1f;
 
-
 		private readonly Vector3 maxRotation = new Vector3(0, 5f, 0);
 		private readonly Vector3 minRotation = new Vector3(0, -350f, 0);
 		public float maxLevel = 200f;
-
-
-
 		public LightController gabaritController;
 		public bool gabaritOn;
-
 		public LightController chokeController;
 		public bool chokeOn;
-
 		public LightController longController;
 		public bool longOn;
-
 		public LightController lightController;
-
-
 		private float speed;
 		public void Update()
 		{
@@ -349,23 +281,14 @@ namespace GTParts
 
 			speed = active ? drivetrain.differentialSpeed : 0;
 
-
-			
-
-
 			needleTransform.localEulerAngles = Vector3.Lerp(maxRotation, minRotation, Mathf.Clamp(speedGaugeNeedleValue / maxLevel, 0, 1));
-
-
 
 			gabaritOn = active && GlobalVariables.gabariti && GlobalVariables.dashWired;
 			chokeOn = active && GlobalVariables.choke && GlobalVariables.dashWired;
 			longOn = active && GlobalVariables.longBeams && GlobalVariables.dashWired;
-
 			gabaritController.lightOn = gabaritOn;
 			chokeController.lightOn = chokeOn;
 			longController.lightOn = longOn;
-
-
 			lightController.lightOn = active && GlobalVariables.gabariti && GlobalVariables.dashWired;
 		}
 		public void FixedUpdate()
@@ -378,64 +301,46 @@ namespace GTParts
 		{
 			Transform speedGauge = gameObject.transform;
 
-
-			
 			drivetrain = GlobalVariables.satsuma.GetComponent<Drivetrain>();
 
 			Destroy(speedGauge.gameObject.GetComponent<PlayMakerFSM>());
-
 
 			GameObject lightObject = new GameObject("GabarituLight");
 			lightObject.transform.parent = transform;
 			lightObject.transform.localPosition = new Vector3(0.035f, -0.009f, -0.017f);
 			gabaritController = lightObject.AddComponent<LightController>();
-
 			gabaritController.colorSetting = new Color(1, 10, 1);
 			gabaritController.intensityMult = 1.7f;
 			gabaritController.shadows = LightShadows.Soft;
 			gabaritController.range = 0.03f;
 
-
 			lightObject = new GameObject("ChokeLight");
-            lightObject.transform.parent = transform;
-            lightObject.transform.localPosition = new Vector3(0.028f, -0.009f, -0.028f);
-            chokeController = lightObject.AddComponent<LightController>();
-
+			lightObject.transform.parent = transform;
+			lightObject.transform.localPosition = new Vector3(0.028f, -0.009f, -0.028f);
+			chokeController = lightObject.AddComponent<LightController>();
 			chokeController.colorSetting = new Color(18, 13, 0);
 			chokeController.intensityMult = 2f;
 			chokeController.shadows = LightShadows.Soft;
 			chokeController.range = 0.03f;
 
-
-            lightObject = new GameObject("LongLight");
-            lightObject.transform.parent = transform;
-            lightObject.transform.localPosition = new Vector3(0.017f, -0.009f, -0.035f);
-            longController = lightObject.AddComponent<LightController>();
-
+			lightObject = new GameObject("LongLight");
+			lightObject.transform.parent = transform;
+			lightObject.transform.localPosition = new Vector3(0.017f, -0.009f, -0.035f);
+			longController = lightObject.AddComponent<LightController>();
 			longController.colorSetting = new Color(1, 1, 20);
 			longController.intensityMult = 5f;
 			longController.shadows = LightShadows.Soft;
 			longController.range = 0.03f;
 
-
-
-
 			lightObject = new GameObject("GaugeLight");
 			lightObject.transform.parent = transform;
 			lightObject.transform.localPosition = new Vector3(-0.038f, -0.03f, 0.035f);
 			lightController = lightObject.AddComponent<LightController>();
-
 			lightController.colorSetting = new Color(10, 10, 10);
 			lightController.intensityMult = 3f;
 			lightController.shadows = LightShadows.Soft;
 			lightController.range = 0.2f;
 			lightController.useTotal = true;
-
-
-
-
-
-
 
 			needleTransform = transform.GetChild(0);
 		}
@@ -448,31 +353,21 @@ namespace GTParts
 		public float rpmValue;
 		public float rpmGaugeNeedleValue;
 		public Transform needleTransform;
-
-
-
 		public float downMult = 60f;
 		public float downPow = 1.2f;
 		public float upMult = 150f;
 		public float upPow = 1f;
 
-
 		private readonly Vector3 maxRotation = new Vector3(0, 0.2f, -184);
 		private readonly Vector3 minRotation = new Vector3(0, 302f, -184);
 		public float maxLevel = 302f;
 
-
-
 		public LightController oilController;
 		public bool oilOn;
-
 		public LightController batteryController;
 		public bool batteryOn;
-
 		public LightController lightController;
-
 		public readonly float multiplier = 36.1111f;
-
 		private float rpm;
 		public void Update()
 		{
@@ -480,14 +375,10 @@ namespace GTParts
 
 			rpm = active ? drivetrain.rpm / multiplier : 0;
 
-
 			needleTransform.localEulerAngles = Vector3.Lerp(maxRotation, minRotation, Mathf.Clamp(rpmGaugeNeedleValue / maxLevel, 0, 1));
-
-
 
 			oilOn = active && GlobalVariables.oil;
 			batteryOn = active && GlobalVariables.battery;
-
 			oilController.lightOn = oilOn;
 			batteryController.lightOn = batteryOn;
 			lightController.lightOn = active && GlobalVariables.gabariti;
@@ -506,8 +397,6 @@ namespace GTParts
 			Destroy(gameObject.transform.GetComponent<PlayMakerFSM>());
 			needleTransform = transform.GetChild(0);
 
-
-
 			GameObject lightObject = new GameObject("OilLight");
 			lightObject.transform.parent = transform.parent;
 			lightObject.transform.localPosition = new Vector3(0.014f, -0.021f, -0.032f);
@@ -516,28 +405,20 @@ namespace GTParts
 			oilController.intensityMult = 0.5f;
 			oilController.shadows = LightShadows.Soft;
 			oilController.range = 0.1f;
-
-
-
+   
 			lightObject = new GameObject("BatteryLight");
 			lightObject.transform.parent = transform.parent;
 			lightObject.transform.localPosition = new Vector3(-0.008f, -0.021f, -0.032f);
 			batteryController = lightObject.AddComponent<LightController>();
-
 			batteryController.colorSetting = new Color(10, 1, 1); 
 			batteryController.intensityMult = 0.5f;
 			batteryController.shadows = LightShadows.Soft;
 			batteryController.range = 0.1f;
-
-
-			
-
-
+   
 			lightObject = new GameObject("GaugeLight");
 			lightObject.transform.parent = transform.parent;
 			lightObject.transform.localPosition = new Vector3(0, -0.02f, 0.043f);
 			lightController = lightObject.AddComponent<LightController>();
-
 			lightController.colorSetting = new Color(10, 10, 10);
 			lightController.intensityMult = 5f;
 			lightController.shadows = LightShadows.Soft;
@@ -546,20 +427,12 @@ namespace GTParts
 		}
 	}
 
-
-	
-
-
-
-
 	public class LightingManager : MonoBehaviour
 	{
 		public static FUEL fuelClass;
 		public static TEMP tempClass;
 		public static SPEEDO speedoClass;
 		public static TACHO tachoClass;
-
-
 
 		public void Start()
 		{
@@ -590,17 +463,12 @@ namespace GTParts
 		}
 	}
 
-
-
-
 	public class Status : MonoBehaviour
     {
 		public PlayMakerFSM electricitySimulation;
 		public FsmFloat voltsFsm;
 		public FsmFloat oilPressure;
 		public FsmFloat charging;
-
-
 
 		public FsmBool stockInstalled;
 		public FsmBool gtInstalled;
@@ -615,7 +483,6 @@ namespace GTParts
 
 		public GameObject rearLights;
 		public GameObject longBeams;
-
 
 		public FsmBool tachGtInstalled;
 		public FsmBool tachInstalled;
@@ -651,11 +518,8 @@ namespace GTParts
 
 			voltsFsm = electricitySimulation.FsmVariables.FindFsmFloat("Volts");
 			charging = electricitySimulation.FsmVariables.FindFsmFloat("Charging");
-
 			oilPressure = transform.GetChild(15).GetChild(1).GetChild(4).gameObject.GetComponents<PlayMakerFSM>()[1].FsmVariables.FindFsmFloat("OilPressureBar");
 			
-
-
 			stockInstalled = GameObject.Find("Database/DatabaseMechanics/DashboardMeters").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("Installed"); 
 			gtInstalled = GTParts.gtPanelInfo.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("Installed");
 
@@ -675,7 +539,6 @@ namespace GTParts
 			tachInstalled = GTParts.gtTachInfo.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("Installed");
 		}
 	}
-
 
 	public static class GlobalVariables
     {
@@ -700,17 +563,6 @@ namespace GTParts
 		public static GameObject gtTachometer;
 		public static GameObject gtPanel;
     }
-
-
-
-
-
-
-
-
-
-
-
 
 	public static class Extensions
 	{
@@ -783,9 +635,6 @@ namespace GTParts
 
 	}
 
-
-
-
 	public class FsmHookActionHere : FsmStateAction
 	{
 		public Action hook;
@@ -796,7 +645,6 @@ namespace GTParts
 			Finish();
 		}
 	}
-
 
 	public class CreditBehaviour : MonoBehaviour
     {
@@ -882,8 +730,6 @@ namespace GTParts
 " ██║███████╗███████╗",
 " ╚═╝╚══════╝╚══════╝"
 		};
-
-
 
 		public static float mediumSlowUpdateTimer;
 		public static bool didCommand;
@@ -1040,10 +886,7 @@ namespace GTParts
 				z += string.Format("\n{0}", x);
 			}
 
-
-
 			GTParts.modLog = z.Replace("█", string.Format("{0}█</color>", b)).Replace("═", string.Format("{0}═</color>", d)).Replace("║", string.Format("{0}║</color>", d)).Replace("╗", string.Format("{0}╗</color>", d)).Replace("╔", string.Format("{0}╔</color>", d)).Replace("╝", string.Format("{0}╝</color>", d)).Replace("╚", string.Format("{0}╚</color>", d)).Replace(" ", "<color=black>░</color>");
-
 
 			for (int i = 0; i < 6; i++)
 			{
@@ -1069,8 +912,6 @@ namespace GTParts
 		}
 	}
 
-
-
 	public class GTParts : Mod
 	{
 		public override string ID => "GTParts";
@@ -1079,14 +920,11 @@ namespace GTParts
 		public override string Version => "1.2";
 		public override bool UseAssetsFolder => true;
 
-
 		public static string ModString;
 		public static float repeatTimer;
 
 		public static bool isSavingNormally1;
 		public static bool isSavingNormally2;
-
-
 
 		public static Drivetrain satsumaDrivetrain;
 
@@ -1098,8 +936,6 @@ namespace GTParts
 		public static Texture2D dashTexture;
 		public static Transform gaugeTriggers;
 
-
-
 		public static GameObject gtTachometer;
 		public static GameObject gtTachInfo;
 		public static GameObject gtTachTrigger;
@@ -1108,9 +944,7 @@ namespace GTParts
 
 		public static GameObject stockTriggerMeters;
 
-
 		public static string modLog = "";
-
 
 		public static readonly float brightness = 5.7f;
 		public static float brightnessPotResistane;
@@ -1118,7 +952,6 @@ namespace GTParts
 		public static GameObject lightPotentiometer;
 		public static GameObject lightPotentiometerFsmObject;
 		public static PlayMakerFSM lightPotentiometerFsm;
-
 
 		public static GameObject satsuma;
 		public static Transform warnings;
@@ -1128,7 +961,6 @@ namespace GTParts
 			minValue = 0,
 			maxValue = 0
 		};
-
 
 		public static Texture2D needleTexture;
 		public static Texture2D tachTexture;
@@ -1147,11 +979,8 @@ namespace GTParts
 		public static Texture2D dashboardSurface;
 		public static GameObject stockPanel;
 
-
-
 		public static bool resetMod;
 
-		
 		public static GameObject cdSave;
 		public static GameObject cd;
 		public static GameObject cdTrigger;
@@ -1169,9 +998,6 @@ namespace GTParts
 		public static FsmBool nosPurchased;
 		public static GameObject nosStockTrigger;
 		public static GameObject nosObject;
-
-
-
 
 		public override void ModSettings()
 		{
@@ -1203,8 +1029,6 @@ namespace GTParts
                 whiteDash = bool.Parse(dashChoice.GetValue().ToString());
                 LoadTextures();
 
-
-
                 satsuma = GameObject.Find("SATSUMA(557kg, 248)");
                 satsumaDrivetrain = satsuma.GetComponent<Drivetrain>();
                 credits = satsuma.AddComponent<CreditBehaviour>();
@@ -1220,7 +1044,6 @@ namespace GTParts
 
                 CheckIfResset();
 
-
                 RefrenceStuff();
 
                 ChangeSomeGauges();
@@ -1233,7 +1056,6 @@ namespace GTParts
 				modLog += error.Replace("[GameObject]", "").Replace(" [0x00000] in <filename unknown>:0", "").Replace("HutongGames.", "").Replace("Int32", "Int").Replace("PlayMaker.", "");
 			}
 		}
-
 	
 		public override void Update()
 		{
@@ -1252,39 +1074,21 @@ namespace GTParts
 			if (nosPurchased != null && nosPurchased.Value)
 				FixNosForGtPanel();
 
-
-
 			gaugeTriggers.gameObject.SetActive(stockPanel.transform.GetChild(7).childCount == 0);
-
-
-
-			
-
-
-
-
-
 
 			stockTriggerMeters.SetActive(!GlobalVariables.gtDashInstalled);
 			gtPanelTrigger.SetActive(!GlobalVariables.dashInstalled);
 
 			warnings.GetChild(0).gameObject.SetActive(warnings.gameObject.activeSelf);
 
-			
-
-
-
 			gtPanel.transform.GetChild(9).gameObject.SetActive(gtPanel.transform.GetChild(7).childCount == 0);
 			stockPanel.transform.GetChild(9).gameObject.SetActive(stockPanel.transform.GetChild(7).childCount == 0);
 			gtPanel.transform.GetChild(10).gameObject.SetActive(gtPanel.transform.GetChild(8).childCount == 0);
 			stockPanel.transform.GetChild(10).gameObject.SetActive(stockPanel.transform.GetChild(8).childCount == 0);
 
-
 			bool anyInstalled = GlobalVariables.gtDashInstalled || GlobalVariables.dashInstalled;
 			dashInstalledStatus.Value = anyInstalled;
 			blinkerDashRequiredBool.Value = anyInstalled;
-
-
 
 			if (gtTachometer.transform.position.y < -200)
 			{
@@ -1308,13 +1112,6 @@ namespace GTParts
 			ChangeSaveFile(null, GameObject.Find("Database/DatabaseMechanics/Radio"), null, true);
 			ChangeSaveFile(null, GameObject.Find("Database/DatabaseOrders/CD_player"), null, true);
 		}
-
-
-
-
-
-		
-		
 
 		public static void ResetMod()
         {
